@@ -5,11 +5,12 @@ import pandas as pd
 from textblob import TextBlob
 import datetime
 
-def next_date(date):
-	date_obj = datetime.datetime.strptime(date, '%Y-%m-%d')
-	date_obj += datetime.timedelta(days=1)
-	next_date = date_obj.strftime("%Y-%m-%d")
-	return next_date
+def date_and_next_date(date):
+	date_obj = datetime.datetime.strptime(date, '%d-%m-%Y')
+	next_date_obj = date_obj + datetime.timedelta(days=1)
+	date = date_obj.strftime("%Y-%m-%d")
+	next_date = next_date_obj.strftime("%Y-%m-%d")
+	return date, next_date
 
 def get_twitter_api():
 	consumer_key = ''
@@ -19,10 +20,11 @@ def get_twitter_api():
 	api = tweepy.API(auth)
 	return api
 
-def get_tweet_score(date, api):
+def get_tweet_score(d, api):
 	score = 0
 	n = 0
-	for tweet in tweepy.Cursor(api.search, q="#ibm", count=100, lang="en", since=date, until=next_date(date)).items():
+	date, next_date = date_and_next_date(d)
+	for tweet in tweepy.Cursor(api.search, q="#ibm", count=100, lang="en", since=date, until=next_date).items():
 		score += TextBlob(tweet.text).sentiment.polarity
 		n += 1
 	if n > 0:
