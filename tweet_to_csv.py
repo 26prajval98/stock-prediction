@@ -3,7 +3,13 @@ import numpy as np
 import tweepy
 import pandas as pd
 from textblob import TextBlob
+import datetime
 
+def next_date(date):
+	date_obj = datetime.datetime.strptime(date, '%Y-%m-%d')
+	date_obj += datetime.timedelta(days=1)
+	next_date = date_obj.strftime("%Y-%m-%d")
+	return next_date
 
 def get_twitter_api():
 	consumer_key = ''
@@ -16,10 +22,9 @@ def get_twitter_api():
 def get_tweet_score(date, api):
 	score = 0
 	n = 0
-	for tweet in tweepy.Cursor(api.search, q="#ibm", count=100, lang="en", since="2017-04-03").items():
+	for tweet in tweepy.Cursor(api.search, q="#ibm", count=100, lang="en", since=date, until=next_date(date)).items():
 		score += TextBlob(tweet.text).sentiment.polarity
 		n += 1
-
 	if n > 0:
 		score /= n
 	else:
